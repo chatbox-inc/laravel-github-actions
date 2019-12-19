@@ -22,8 +22,6 @@ jobs:
           php-version: '7.1'
           extensions: mbstring, intl, pdo, pdo_pgsql, pdo_sqlite #optional, setup extensions
           ini-values: post_max_size=256M, short_open_tag=On #optional, setup php.ini configuration
-#        coverage: xdebug #optional, setup coverage driver
-#        pecl: false #optional, setup PECL
     - name: Print PHP Version
       run: |
         php -v
