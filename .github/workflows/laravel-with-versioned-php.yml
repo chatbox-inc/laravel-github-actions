@@ -20,8 +20,8 @@ jobs:
         uses: shivammathur/setup-php@v1
         with:
           php-version: '7.1'
-          extensions: mbstring, intl, pdo, pdo_pgsql, pdo_sqlite #optional, setup extensions
-          ini-values: post_max_size=256M, short_open_tag=On #optional, setup php.ini configuration
+          extensions: mbstring, intl, pdo, pdo_pgsql, pdo_sqlite
+          ini-values: post_max_size=256M, short_open_tag=On
     - name: Print PHP Version
       run: |
         php -v
