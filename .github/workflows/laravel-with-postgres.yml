@@ -1,0 +1,55 @@
+name: Laravel with Postgres
+
+on: [push]
+
+jobs:
+  laravel-tests:
+    runs-on: ubuntu-latest
+    env:
+      APP_ENV: testing
+      APP_DEBUG: true
+      DB_CONNECTION: postgres
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_DATABASE=homestead
+      DB_USERNAME=homestead
+      DB_PASSWORD=secret
+      CACHE_DRIVER: file
+      QUEUE_DRIVER: sync
+      MAIL_DRIVER: array
+    services:
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+        env:
+          POSTGRES_PASSWORD: secret
+          POSTGRES_USER: homestead
+          POSTGRES_DB: homestead
+    steps:
+    - uses: actions/checkout@v1
+    - name: Copy .env
+      run: |
+        php -r "file_exists('.env') || copy('.env.example', '.env');"
+    - name: Get Composer Cache Directory
+      id: composer-cache
+      run: |
+        echo "::set-output name=dir::$(composer config cache-files-dir)"
+    - uses: actions/cache@v1
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-composer-
+    - name: Install Dependencies
+      run: |
+        composer install
+    - name: Generate key
+      run: php artisan key:generate
+    - name: Create Database
+      run: |
+        touch database/database.sqlite
+        php artisan migrate --seed
+    - name: Execute tests (Unit and Feature tests) via PHPUnit
+      run: |
+        php ./vendor/bin/phpunit
