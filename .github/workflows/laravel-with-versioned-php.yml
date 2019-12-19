@@ -1,0 +1,49 @@
+name: Laravel with Versioned PHP
+
+on: [push]
+
+jobs:
+  laravel-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print PHP Version
+        run: |
+          php -v
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v1
+        with:
+          php-version: '7.1'
+          extensions: mbstring, intl, pdo, pdo_pgsql, pdo_sqlite #optional, setup extensions
+          ini-values: post_max_size=256M, short_open_tag=On #optional, setup php.ini configuration
+#        coverage: xdebug #optional, setup coverage driver
+#        pecl: false #optional, setup PECL
+    - name: Print PHP Version
+      run: |
+        php -v
+    - uses: actions/checkout@v1
+    - name: Copy .env
+      run: |
+        php -r "file_exists('.env') || copy('.env.example', '.env');"
+    - name: Get Composer Cache Directory
+      id: composer-cache
+      run: |
+        echo "::set-output name=dir::$(composer config cache-files-dir)"
+    - uses: actions/cache@v1
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-composer-
+    - name: Install Dependencies
+      run: |
+        composer install
+    - name: Generate key
+      run: php artisan key:generate
+    - name: Create Database
+      run: |
+        mkdir -p database
+        touch database/database.sqlite
+        php artisan migrate --seed
+    - name: Execute tests (Unit and Feature tests) via PHPUnit
+      run: |
+        php ./vendor/bin/phpunit
